@@ -14,8 +14,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 urllib3.disable_warnings(urllib3.exceptions.TimeoutError)
 urllib3.disable_warnings(urllib3.exceptions.MaxRetryError)
 
-time_stamp = datetime.datetime.utcfromtimestamp(
-    time.time()).strftime("%Y-%m-%d")
+time_stamp = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
 class Proxy_Reader:
@@ -28,34 +27,6 @@ class Proxy_Reader:
         self.Init_Proxy_Test_Thread()
         self.OK_List = []
         self.search_word = search_word
-
-    def Timer_Test_All_Source(self):
-        while 1:
-            if self.Proxy_Queue.qsize() < 100:
-                self.Test_All_Source()
-            time.sleep(1)
-
-    def Test_All_Source(self):
-
-        for source_link in self.Source_List:
-            # self.Test_Source_Proxy(source_link)
-            t = Thread(target=self.Test_Source_Proxy, args=[source_link])
-            t.start()
-
-    def Test_Source_Proxy(self, source_link):
-        try:
-            proxy_list = obj.Get_Page_Proxy(source_link)
-            for proxy in proxy_list:
-                self.Proxy_Queue.put(proxy)
-            print("Import_Proxy_Done, now size:{}".format(
-                self.Proxy_Queue.qsize()))
-            while 1:
-                print(self.OK_List)
-                time.sleep(1)
-
-        except Exception as e:
-            print(e)
-            print(source_link)
 
     def Init_Proxy_Test_Thread(self):
 
@@ -76,7 +47,7 @@ class Proxy_Reader:
             time.sleep(0.2)
 
     def Proxy_Test_Unit(self, proxy_ip):
-        test_url = "https://www.google.com.tw/"
+        test_url = "https://www.google.com/"
         try:
             rs = self.Net.Get(url=test_url, proxy_ip=proxy_ip, timeout=7)
 
@@ -90,55 +61,7 @@ class Proxy_Reader:
         data = rs.content.decode()
         proxy_list = self.Net.preg_get_word(
             "(\d+\.\d+\.\d+\.\d+:\d+)", 'all', data)
-
         return proxy_list
-
-    def Check_List_Proxy_Stat(self, proxy_source_list):
-
-        Thread_list = []
-        dumpdir = 'proxy_pool_builder/proxy_data'
-        for source_link in proxy_source_list:
-            self.All_Check_List[source_link] = False
-            # t = Thread(target=self.Check_Page_is_Proxy_Page,args=[source_link])
-            t = Thread(target=self.Check_Dump_Page,
-                       args=[source_link, dumpdir])
-            Thread_list.append(t)
-            t.start()
-        for tc in tqdm(Thread_list, desc="正在進行代理來源頁面檢測"):
-            tc.join()
-        Right_List = []
-        for url in self.All_Check_List:
-            stat = self.All_Check_List[url]
-            if stat == True:
-                Right_List.append(url)
-        return Right_List
-
-    def Check_Page_is_Proxy_Page(self, url):
-        rs_stat = None
-        try:
-            rs = self.Net.Get(url, timeout=1)
-            data = rs.content.decode(errors='ignore')
-        except Exception:  # as e:
-            rs_stat = False
-            # print(e)
-
-        if rs_stat == None:
-            proxy_list = self.Net.preg_get_word(
-                "(\d+\.\d+\.\d+\.\d+:\d+)", 'all', data)
-
-            if len(proxy_list) == 0 or proxy_list == "empty_data":
-                rs_stat = False
-            else:
-                rs_stat = True
-                # with open('./math_term_spider/proxy_pool/data/' + self.search_word + '.json', 'a') as pool_data:
-                with open('Proxy_Pool_Builder/proxy_data' + self.search_word + '.json', 'a') as pool_data:
-                    json.dump(proxy_list, pool_data)
-                    pool_data.write('\n')
-
-        if url in self.All_Check_List:
-            self.All_Check_List[url] = rs_stat
-
-        return rs_stat
 
     def Check_Dump_Page(self, url, dumpdir, dump=True):
         rs_stat = None

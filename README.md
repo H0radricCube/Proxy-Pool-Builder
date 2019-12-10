@@ -18,3 +18,5 @@ from Proxy_Pool_Builder.Google_proxy_crawler import Google_proxy_crawler
 proxy_crawler = Google_proxy_crawler()
 proxy_crawler.build_proxy_pool(new_pool=True)
 ```
+
+the proxy pool will be build in **proxy_data/**
