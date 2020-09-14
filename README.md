@@ -1,5 +1,4 @@
 # short intro
-
 It's a proxy pool builder (using google currently)\
 inspired by and modified from: [peterinhouse123's Proxy_Pool](https://github.com/peterinhouse123/Proxy_Pool.git)
 
